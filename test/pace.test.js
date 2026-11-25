@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  watts, splitFromWatts, splitOf, paul2kSplit, parseTime, parseDist, fmt, zoneAt, latest2k, ref2k,
+  watts, splitFromWatts, splitOf, paul2kSplit, parseTime, parseDist, fmt, ZONES, zoneAt, latest2k, ref2k,
   targetSplit, valueForSplit, parseShareParams, buildShareQuery, presetFor,
 } from "../public/pace.js";
 
@@ -47,16 +47,26 @@ test("fmt rounds to tenths before carrying into minutes", () => {
   assert.equal(fmt(NaN), "–");
 });
 
-test("zoneAt finds zones, boundaries and the gaps between them", () => {
+test("zone edges meet halfway across the guide's gaps", () => {
+  assert.deepEqual(ZONES.map((z) => [z.id, z.edge]), [
+    ["UT2", [19, 30]], ["UT1", [11, 19]], ["AT", [3.5, 11]], ["TR", [-3.5, 3.5]], ["AN", [null, -3.5]],
+  ]);
+  for (let i = 1; i < ZONES.length; i++) assert.equal(ZONES[i].edge[1], ZONES[i - 1].edge[0], "zones must touch");
+});
+
+test("zoneAt names a zone for every offset up to UT2's slow end", () => {
   assert.equal(zoneAt(25).zone.id, "UT2");
-  assert.equal(zoneAt(20).zone.id, "UT2");
-  assert.equal(zoneAt(18).zone.id, "UT1");
+  assert.equal(zoneAt(30).zone.id, "UT2");
+  assert.equal(zoneAt(19).zone.id, "UT2"); // a shared edge goes to the slower zone
+  assert.equal(zoneAt(18.9).zone.id, "UT1");
+  assert.equal(zoneAt(11.5).zone.id, "UT1");
+  assert.equal(zoneAt(4).zone.id, "AT");
   assert.equal(zoneAt(0).zone.id, "TR");
-  assert.equal(zoneAt(-5).zone.id, "AN");
+  assert.equal(zoneAt(-3.4).zone.id, "TR");
+  assert.equal(zoneAt(-4).zone.id, "AN");
   assert.equal(zoneAt(-12).zone.id, "AN");
-  assert.deepEqual(zoneAt(19).between.map((z) => z.id), ["UT2", "UT1"]);
-  assert.deepEqual(zoneAt(-3.5).between.map((z) => z.id), ["TR", "AN"]);
-  assert.equal(zoneAt(31).easier, true);
+  for (let off = -15; off <= 30; off += 0.1) assert.ok(zoneAt(off).zone, `no zone at ${off.toFixed(1)}`);
+  assert.equal(zoneAt(30.2).easier, true);
 });
 
 test("latest2k picks the most recent 2k by date, then by entry time", () => {

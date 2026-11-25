@@ -59,19 +59,27 @@ export const ZONES = [
     goal: "Peak power. All-out. Use sparingly.", sessions: "8 × 200m with full recovery, or 6 × 30 s max with 4 min rest" },
 ];
 
+// The guide leaves gaps between zones (UT1 ends at +18 s, UT2 starts at +20 s). Each zone's `edge`
+// closes them by meeting its neighbour halfway, so every split up to UT2's slow end has a zone.
+// `off` keeps the guide's own range; the middle of it is where a tap on the zone lands.
+ZONES.forEach((z, i) => {
+  const slower = ZONES[i - 1], faster = ZONES[i + 1];
+  z.edge = [
+    faster ? (z.off[0] + faster.off[1]) / 2 : null,
+    slower ? (slower.off[0] + z.off[1]) / 2 : z.off[1],
+  ];
+});
+
 export const zoneMid = (z) => (z.off[0] === null ? z.off[1] - 3 : (z.off[0] + z.off[1]) / 2);
 
-// Where an offset from the 2k split falls: { zone } | { between: [slower, faster] } | { easier: true }.
+// Where an offset from the 2k split falls: { zone } | { easier: true } (slower than UT2).
+// Slower zones are checked first, so a shared edge belongs to the slower zone.
 export function zoneAt(off) {
   const EPS = 0.05;
+  if (off > ZONES[0].edge[1] + EPS) return { easier: true };
   for (const z of ZONES) {
-    const lo = z.off[0] === null ? -Infinity : z.off[0];
-    if (off >= lo - EPS && off <= z.off[1] + EPS) return { zone: z };
-  }
-  if (off > ZONES[0].off[1]) return { easier: true };
-  for (let i = 0; i < ZONES.length - 1; i++) {
-    const slower = ZONES[i], faster = ZONES[i + 1];
-    if (off < slower.off[0] && off > faster.off[1]) return { between: [slower, faster] };
+    const fast = z.edge[0] === null ? -Infinity : z.edge[0];
+    if (off >= fast - EPS) return { zone: z };
   }
   return { zone: ZONES[ZONES.length - 1] };
 }

@@ -143,3 +143,9 @@ body { margin: 0; padding-top: calc(20px + env(safe-area-inset-top, 0px)); paddi
 .notice button { justify-self: start; border: 0; background: none; color: var(--accent); padding: 0; text-decoration: underline; text-underline-offset: 2px; }
 .share { display: grid; gap: 6px; justify-items: start; }
 #shareUrl { width: 100%; font: 0.85rem var(--body); color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+.basis .zsrc { display: block; margin-top: 2px; }
+.piece { display: flex; align-items: center; flex-wrap: wrap; justify-content: center; gap: 6px 8px; font-variant-numeric: tabular-nums; }
+.piece input { width: 7.5rem; font: 600 1.1rem var(--display); color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; }
+#pieceOut { font-size: 0.92rem; color: var(--muted); }
+#pieceOut b { color: var(--fg); font-weight: 600; }
+#pieceOut .perr { color: var(--danger); font-size: 0.82rem; }

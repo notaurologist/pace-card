@@ -1,13 +1,19 @@
 import {
   watts, splitOf, parseTime, parseDist, fmt, signed, ZONES, zoneMid, zoneAt, ref2k, targetSplit, valueForSplit,
-  PCT_RANGE, SEC_RANGE, PRESETS, presetFor, parseShareParams, buildShareQuery,
+  PCT_RANGE, SEC_RANGE, PRESETS, presetFor, parseShareParams, buildShareQuery, parsePiece, pieceAt,
 } from "./pace.js";
 
 const $ = (id) => document.getElementById(id);
 const KEY = "pacecard.v1";
 const fmtShort = (sec) => fmt(sec).replace(/\.0$/, "");
 const fmtDist = (m) => Math.round(m).toLocaleString("en-US");
-const fmtDate = (d) => (d ? new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "");
+// The year is shown only when it isn't this year, so an old 2k is easy to spot.
+const fmtDate = (d) => {
+  if (!d) return "";
+  const dt = new Date(d + "T12:00:00");
+  const year = dt.getFullYear() !== new Date().getFullYear() ? "numeric" : undefined;
+  return dt.toLocaleDateString("en-US", { month: "short", day: "numeric", year });
+};
 const today = () => { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
 const zvar = (z, part) => `var(--z-${z.id.toLowerCase()}-${part})`;
 
@@ -24,7 +30,7 @@ function testLabel(t) {
 
 // ---- state (saved on this device only) ----
 const EXAMPLE = { id: "example", kind: "time", time: 1200, dist: 4500, createdAt: 0, example: true };
-let state = { tests: [EXAMPLE], sel: "example", mode: "pct", pct: 65, sec: 18, maxhr: "" };
+let state = { tests: [EXAMPLE], sel: "example", mode: "pct", pct: 65, sec: 18, maxhr: "", piece: "" };
 let storageOk = true;
 try {
   const saved = JSON.parse(localStorage.getItem(KEY) || "null");
@@ -70,7 +76,11 @@ function render() {
       ? `Using a 2k estimated from your ${testName(r.test)} test: <b>${fmt(r.split)}</b> /500m · ${edit}`
       : `Using your most recent 2k: <b>${fmt(r.test.time)}</b> (${fmt(r.split)} /500m)${r.test.date ? ", " + fmtDate(r.test.date) : ""} · <button type="button" data-edit="${r.test.id}">Edit</button>`;
   } else {
-    $("basis").innerHTML = `Test split <b>${fmt(bs)}</b> /500m · ${Math.round(bw)} W · ${edit}`;
+    // Zones always come from the most recent 2k, which may not be the test selected here, so say which one.
+    const zsrc = r.est ? `Zones use a 2k estimated from this test (${fmt(r.split)} /500m).`
+      : r.test.id === t.id ? ""
+      : `Zones use your 2k ${r.test.date ? "from " + fmtDate(r.test.date) : "(most recent)"}: <b>${fmt(r.test.time)}</b> (${fmt(r.split)} /500m) · <button type="button" data-edit="${r.test.id}">Edit</button>`;
+    $("basis").innerHTML = `Test split <b>${fmt(bs)}</b> /500m · ${Math.round(bw)} W · ${edit}` + (zsrc ? `<span class="zsrc">${zsrc}</span>` : "");
   }
 
   // Answer
@@ -122,6 +132,19 @@ function render() {
     const ps = targetSplit({ mode: "pct", pct: p }, t, r);
     return `<tr data-p="${p}" class="${state.mode === "pct" && p === state.pct ? "hit" : ""}"><td>${p}%</td><td>${fmt(ps)}</td><td>${Math.round((bw * p) / 100)}</td><td>${signed(Math.round(ps - r.split))} s</td></tr>`;
   }).join("");
+
+  // Piece at the target split
+  if (document.activeElement !== $("piece")) $("piece").value = state.piece;
+  const pc = parsePiece(state.piece);
+  if (!pc) $("pieceOut").textContent = "";
+  // Hold the error until the field loses focus, so typing 5000 doesn't flash an error at "5".
+  else if (pc.error) $("pieceOut").innerHTML = document.activeElement === $("piece") ? "" : `<span class="perr">${pc.error}</span>`;
+  else {
+    const res = pieceAt(s, pc);
+    $("pieceOut").innerHTML = pc.kind === "time"
+      ? `<b>${fmtDist(res.dist)} m</b> in ${fmtShort(pc.time)}`
+      : `<b>${fmt(res.time)}</b> for ${fmtDist(pc.dist)} m`;
+  }
 
   $("shareUrl").hidden = true; $("shareMsg").textContent = "";
   save();
@@ -195,11 +218,24 @@ $("editor").addEventListener("submit", (e) => {
   render();
 });
 $("edCancel").addEventListener("click", () => { $("editor").hidden = true; });
+let undoTimer = null;
 $("edDelete").addEventListener("click", () => {
+  const i = state.tests.findIndex((x) => x.id === edId);
+  if (i < 0) return;
+  const gone = state.tests[i], prevSel = state.sel;
   state.tests = state.tests.filter((x) => x.id !== edId);
   if (state.sel === edId) state.sel = state.tests[0]?.id;
   $("editor").hidden = true;
   render();
+  showNotice(`Deleted ${testLabel(gone)}.`, null, { label: "Undo", run: () => {
+    clearTimeout(undoTimer);
+    if (!state.tests.some((x) => x.id === gone.id)) state.tests.splice(Math.min(i, state.tests.length), 0, gone);
+    state.sel = prevSel;
+    render();
+  } });
+  clearTimeout(undoTimer);
+  const n = $("linkNotice"), shown = n.innerHTML;
+  undoTimer = setTimeout(() => { if (n.innerHTML === shown) n.hidden = true; }, 10000);
 });
 for (const id of ["edDist", "edTime"]) $(id).addEventListener("input", () => { $(id).classList.remove("bad"); $("edErr").textContent = ""; });
 
@@ -232,6 +268,8 @@ $("tval").addEventListener("input", () => {
 });
 $("tval").addEventListener("blur", render);
 $("maxhr").addEventListener("input", () => { state.maxhr = $("maxhr").value.replace(/\D/g, ""); render(); });
+$("piece").addEventListener("input", () => { state.piece = $("piece").value; render(); });
+$("piece").addEventListener("blur", render);
 
 // ---- zone strip: drag, or tap a zone ----
 const strip = $("strip");
@@ -310,3 +348,8 @@ function applyLink() {
 
 applyLink();
 render();
+
+// Ask the browser not to clear saved tests under storage pressure or Safari's 7-day limit on script-written
+// storage. Browsers decide for themselves; adding the page to the home screen is what reliably keeps data on iOS.
+if (storageOk && navigator.storage?.persist) navigator.storage.persisted().then((p) => p || navigator.storage.persist()).catch(() => {});
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});

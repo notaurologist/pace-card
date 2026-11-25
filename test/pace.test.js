@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   watts, splitFromWatts, splitOf, paul2kSplit, parseTime, parseDist, fmt, zoneAt, latest2k, ref2k,
-  targetSplit, valueForSplit, parseShareParams, buildShareQuery, presetFor, PCT_RANGE,
+  targetSplit, valueForSplit, parseShareParams, buildShareQuery, presetFor, PCT_RANGE, parsePiece, pieceAt,
 } from "../public/pace.js";
 
 const near = (a, b, tol = 0.05) => assert.ok(Math.abs(a - b) <= tol, `${a} not within ${tol} of ${b}`);
@@ -120,4 +120,24 @@ test("presetFor maps tests back to their preset", () => {
   assert.equal(presetFor(twenty).key, "20min");
   assert.equal(presetFor({ kind: "dist", dist: 2000, time: 420 }).key, "2k");
   assert.equal(presetFor({ kind: "custom", dist: 2500, time: 500 }).key, "custom");
+});
+
+test("parsePiece reads times and distances the way rowers write them", () => {
+  assert.equal(parsePiece(""), null);
+  assert.equal(parsePiece("  "), null);
+  assert.deepEqual(parsePiece("60:00"), { kind: "time", time: 3600 });
+  assert.deepEqual(parsePiece("1:00:00"), { kind: "time", time: 3600 });
+  assert.deepEqual(parsePiece("60 min"), { kind: "time", time: 3600 });
+  assert.deepEqual(parsePiece("30min"), { kind: "time", time: 1800 });
+  assert.deepEqual(parsePiece("5000"), { kind: "dist", dist: 5000 });
+  assert.deepEqual(parsePiece("5,000 m"), { kind: "dist", dist: 5000 });
+  assert.deepEqual(parsePiece("5k"), { kind: "dist", dist: 5000 });
+  assert.deepEqual(parsePiece("2.5K"), { kind: "dist", dist: 2500 });
+  assert.match(parsePiece("60").error, /60:00/);
+  for (const bad of ["abc", "7::00", "0 min", "0k", "5 km"]) assert.ok(parsePiece(bad).error, bad);
+});
+
+test("pieceAt gives distance for a timed piece and time for a distance", () => {
+  near(pieceAt(120, { kind: "time", time: 3600 }).dist, 15000, 1e-9); // 60 min at 2:00 is 15,000 m
+  near(pieceAt(105, { kind: "dist", dist: 2000 }).time, 420, 1e-9); // 2k at 1:45 is 7:00
 });

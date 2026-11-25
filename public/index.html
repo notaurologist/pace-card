@@ -9,6 +9,7 @@
 <meta name="theme-color" content="#0e151a" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
@@ -60,6 +61,11 @@
       <span class="unit-l" id="tunit">%</span>
       <button type="button" id="inc" aria-label="Increase">+</button>
     </div>
+    <div class="piece">
+      <label for="piece" class="label">Piece</label>
+      <input id="piece" autocomplete="off" placeholder="60:00 or 5k" aria-describedby="pieceOut">
+      <span id="pieceOut" role="status"></span>
+    </div>
   </section>
 
   <section class="strip-wrap" aria-label="Training zones">
@@ -89,7 +95,7 @@
     <div class="fine" id="shareMsg" role="status"></div>
   </section>
 
-  <p class="fine">Percentages are of your test's power (watts), not its time or speed. Watts use the Concept2 formula, 2.80 ÷ (split/500)³. Zones are your 2k split plus seconds, from <a href="https://ergmaniac.com/blog/indoor-rowing-training-zones-explained" target="_blank" rel="noopener">ErgManiac's zone guide</a>. Without a saved 2k, the 2k is estimated with Paul's Law (+5 s/500m each time distance doubles). Your tests are saved on this device only. Pace Card is not affiliated with Concept2 or ErgManiac.</p>
+  <p class="fine">Percentages are of your test's power (watts), not its time or speed. Watts use the Concept2 formula, 2.80 ÷ (split/500)³. Zones are your 2k split plus seconds, from <a href="https://ergmaniac.com/blog/indoor-rowing-training-zones-explained" target="_blank" rel="noopener">ErgManiac's zone guide</a>. Without a saved 2k, the 2k is estimated with Paul's Law (+5 s/500m each time distance doubles). Your tests are saved on this device only. On iPhone, add Pace Card to your home screen so Safari doesn't clear them after a week away. Pace Card is not affiliated with Concept2 or ErgManiac.</p>
 </main>
 <script type="module" src="app.js"></script>
 </body>

@@ -1,0 +1,15 @@
+{
+  "name": "Pace Card",
+  "short_name": "Pace Card",
+  "description": "Target erg splits from your test results, by percentage of power or 2k + seconds.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f1f4f6",
+  "theme_color": "#0b5d8c",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

@@ -43,7 +43,8 @@ body {
 }
 main { max-width: 440px; margin: 0 auto; display: grid; gap: 18px; }
 header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
-h1 { font: 700 1.7rem/1 var(--display); margin: 0; letter-spacing: 0.01em; }
+h1 { font: 700 1.7rem/1 var(--display); margin: 0; letter-spacing: 0.01em; display: flex; align-items: center; gap: 10px; }
+.logo { width: 1.1em; height: 1.1em; flex: none; border-radius: 22%; }
 .tag { font-size: 0.72rem; color: var(--muted); }
 .label { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
 button { font: inherit; color: inherit; cursor: pointer; }

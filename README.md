@@ -13,7 +13,7 @@ It's a static site with no build step and no backend. Tests are saved in each ro
 | % target | that percentage of the test's watts, converted back to a split |
 | +seconds target | 2k split + seconds |
 | 2k used for zones and +seconds | the most recent saved 2k by date rowed; with no 2k saved, an estimate from the selected test using Paul's Law (+5 s/500m per doubling of distance), marked "est." |
-| Zones | 2k split + UT2 19–30 s, UT1 11–19 s, AT 3.5–11 s, TR −3.5 to +3.5 s, AN 3.5 s or more under. These come from [ErgManiac's zone guide](https://ergmaniac.com/blog/indoor-rowing-training-zones-explained) (UT2 20–30, UT1 12–18, AT 5–10, TR ±2, AN −5 or faster), with neighbouring zones meeting halfway across the guide's gaps so every split up to UT2's slow end has a zone. A shared edge belongs to the slower zone. |
+| Zones | 2k split + UT2 20–30 s, UT1 12–18 s, AT 5–10 s, TR −2 to +2 s, AN 5 s or more under, from [ErgManiac's zone guide](https://ergmaniac.com/blog/indoor-rowing-training-zones-explained) |
 
 All of this lives in [`public/pace.js`](public/pace.js), with tests in [`test/pace.test.js`](test/pace.test.js).
 

@@ -77,8 +77,8 @@ function render() {
   const s = targetSplit(state, t, r), w = watts(s), off = s - r.split, zr = zoneAt(off);
   $("outSplit").innerHTML = `${fmt(s)}<small>/500m</small>`;
   const zoneHtml = zr.zone
-    ? `<span class="zpill" style="--zbg:${zvar(zr.zone, "bg")};--zfg:${zvar(zr.zone, "fg")}">${zr.zone.id}${zr.near ? `, near ${zr.near.id}` : ""}${r.est ? " (est.)" : ""}</span>`
-    : `<span class="zpill">Easier than UT2</span>`;
+    ? `<span class="zpill" style="--zbg:${zvar(zr.zone, "bg")};--zfg:${zvar(zr.zone, "fg")}">${zr.zone.id}${r.est ? " (est.)" : ""}</span>`
+    : zr.between ? `<span class="zpill">Between ${zr.between[0].id} and ${zr.between[1].id}</span>` : `<span class="zpill">Easier than UT2</span>`;
   const other = state.mode === "pct"
     ? `<span><b>2k ${signed(Math.round(off))} s</b>${r.est ? " est." : ""}</span>`
     : `<span><b>${Math.round((w / bw) * 100)}%</b> of ${testName(t)} power</span>`;
@@ -90,10 +90,9 @@ function render() {
   if (document.activeElement !== $("tval")) $("tval").value = state.mode === "pct" ? state.pct : (state.sec > 0 ? "+" : "") + state.sec;
   $("tunit").textContent = state.mode === "pct" ? "%" : "s";
 
-  // Zone strip: slow on the left, fast on the right, in seconds from the 2k split.
-  // Zones meet halfway across the guide's gaps, with hard edges.
+  // Zone strip: slow on the left, fast on the right, in seconds from the 2k split
   $("strip").innerHTML = ZONES.map((z) => {
-    const slowX = xOf(z.edge[1]), fastX = z.edge[0] === null ? 1 : xOf(z.edge[0]);
+    const slowX = xOf(z.off[1]), fastX = z.off[0] === null ? 1 : xOf(z.off[0]);
     const left = Math.min(slowX, fastX), width = Math.abs(fastX - slowX);
     const cls = ["band", left <= 0.001 ? "first" : "", left + width >= 0.999 ? "last" : ""].join(" ");
     return `<div class="${cls}" style="left:${left * 100}%;width:${width * 100}%;background:${zvar(z, "bg")};color:${zvar(z, "fg")}">${z.id}</div>`;
@@ -103,15 +102,14 @@ function render() {
   $("axis").innerHTML = `<span>Slower · ${fmtShort(r.split + AX_SLOW)}</span><span>${r.est ? "Est. 2k" : "2k"} ${fmt(r.split)}</span><span>${fmtShort(r.split + AX_FAST)} · Faster</span>`;
 
   // Zone details
-  const z = zr.zone || ZONES[0];
+  const z = zr.zone || (zr.between ? zr.between[0] : ZONES[0]);
   $("zTitle").textContent = `${z.id} · ${z.name}`;
   const hrN = Number(state.maxhr), hasHr = hrN >= 100 && hrN <= 230;
   const hr = !z.hr ? (hasHr ? `Max (${hrN} bpm)` : "Max")
     : hasHr ? `${Math.round((hrN * z.hr[0]) / 100)}–${Math.round((hrN * z.hr[1]) / 100)} bpm` : `${z.hr[0]}–${z.hr[1]}% of max`;
-  const fast = z.edge[0] === null ? null : r.split + z.edge[0], slow = r.split + z.edge[1];
+  const fast = z.off[0] === null ? null : r.split + z.off[0], slow = r.split + z.off[1];
   const pace = fast === null ? `${fmt(slow)} or faster` : `${fmt(slow)} – ${fmt(fast)}`;
-  const range = (a, b) => (a === null ? `${signed(b)} s or faster` : `${signed(a)} to ${signed(b)} s`);
-  const offTxt = `${range(z.edge[0], z.edge[1])} <span class="fine">(guide: ${range(z.off[0], z.off[1])})</span>`;
+  const offTxt = z.off[0] === null ? `${signed(z.off[1])} s or faster` : `${signed(z.off[0])} to ${signed(z.off[1])} s`;
   $("zKv").innerHTML = `<dt>Pace</dt><dd>${pace} /500m</dd><dt>vs 2k</dt><dd>${offTxt}</dd>
     <dt>Stroke rate</dt><dd>${z.rate} spm</dd><dt>Heart rate</dt><dd>${hr}</dd>
     <dt>Purpose</dt><dd>${z.goal}</dd><dt>Sessions</dt><dd>${z.sessions}</dd>`;

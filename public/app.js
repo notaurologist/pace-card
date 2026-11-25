@@ -1,12 +1,18 @@
 import {
   watts, splitOf, parseTime, parseDist, fmt, signed, ZONES, zoneMid, zoneAt, ref2k, targetSplit, valueForSplit,
   PCT_RANGE, SEC_RANGE, PRESETS, presetFor, parseShareParams, buildShareQuery, parsePiece, pieceAt,
+  PIECE_MAX_DIGITS, cleanPieceDigits, pieceDigitsText, pieceFromDigits, pieceToDigits,
 } from "./pace.js";
 
 const $ = (id) => document.getElementById(id);
 const KEY = "pacecard.v1";
 const fmtShort = (sec) => fmt(sec).replace(/\.0$/, "");
 const fmtDist = (m) => Math.round(m).toLocaleString("en-US");
+// Common pieces, as the digits you would enter for them.
+const PIECE_QUICK = {
+  time: [["2000", "20:00"], ["3000", "30:00"], ["4000", "40:00"], ["6000", "60:00"]],
+  dist: [["2000", "2k"], ["5000", "5k"], ["6000", "6k"], ["10000", "10k"]],
+};
 // The year is shown only when it isn't this year, so an old 2k is easy to spot.
 const fmtDate = (d) => {
   if (!d) return "";
@@ -30,11 +36,17 @@ function testLabel(t) {
 
 // ---- state (saved on this device only) ----
 const EXAMPLE = { id: "example", kind: "time", time: 1200, dist: 4500, createdAt: 0, example: true };
-let state = { tests: [EXAMPLE], sel: "example", mode: "pct", pct: 65, sec: 18, maxhr: "", piece: "" };
+let state = { tests: [EXAMPLE], sel: "example", mode: "pct", pct: 65, sec: 18, maxhr: "", pieceKind: "time", piece: { time: "", dist: "" } };
 let storageOk = true;
 try {
   const saved = JSON.parse(localStorage.getItem(KEY) || "null");
   if (saved && Array.isArray(saved.tests)) state = { ...state, ...saved };
+  // Earlier versions kept the piece as typed text ("60:00", "5k"): carry it over as digits.
+  if (typeof state.piece === "string") {
+    const old = parsePiece(state.piece);
+    state.piece = { time: "", dist: "" };
+    if (old && !old.error) { state.pieceKind = old.kind; state.piece[old.kind] = pieceToDigits(old); }
+  } else state.piece = { time: "", dist: "", ...state.piece };
 } catch (e) {
   storageOk = false; // Private mode or blocked storage: the page still works, tests just aren't kept.
 }
@@ -134,18 +146,22 @@ function render() {
   }).join("");
 
   // Piece at the target split
-  if (document.activeElement !== $("piece")) $("piece").value = state.piece;
-  const pc = parsePiece(state.piece);
-  $("pieceHint").hidden = !!pc && !pc.error;
-  for (const b of document.querySelectorAll("[data-piece]")) b.setAttribute("aria-pressed", String(b.dataset.piece === state.piece.trim().toLowerCase()));
-  if (!pc) $("pieceOut").textContent = "";
-  // Hold the error until the field loses focus, so typing 5000 doesn't flash an error at "5".
-  else if (pc.error) $("pieceOut").innerHTML = document.activeElement === $("piece") ? "" : `<span class="perr">${pc.error}</span>`;
+  const pk = state.pieceKind, digits = state.piece[pk];
+  $("pkTime").setAttribute("aria-pressed", String(pk === "time"));
+  $("pkDist").setAttribute("aria-pressed", String(pk === "dist"));
+  $("piece").value = pieceDigitsText(pk, digits);
+  $("piece").placeholder = pk === "time" ? "0:00" : "0";
+  $("pieceUnit").textContent = pk === "time" ? "" : "m";
+  $("pquick").innerHTML = PIECE_QUICK[pk].map(([d, label]) =>
+    `<button type="button" data-piece="${d}" aria-pressed="${d === digits}">${label}</button>`).join("");
+  const pc = pieceFromDigits(pk, digits);
+  if (!pc) $("pieceOut").innerHTML = `<span class="phint">${pk === "time" ? "Enter a time to see how far you'll row at this split." : "Enter a distance to see how long it takes at this split."}</span>`;
+  else if (pc.error) $("pieceOut").innerHTML = `<span class="perr">${pc.error}</span>`;
   else {
     const res = pieceAt(s, pc);
     $("pieceOut").innerHTML = pc.kind === "time"
-      ? `<b>${fmtDist(res.dist)} m</b> in ${fmtShort(pc.time)}`
-      : `<b>${fmt(res.time)}</b> for ${fmtDist(pc.dist)} m`;
+      ? `<b>${fmtDist(res.dist)} m</b> at this split`
+      : `<b>${fmt(res.time)}</b> at this split`;
   }
 
   $("shareUrl").hidden = true; $("shareMsg").textContent = "";
@@ -270,11 +286,30 @@ $("tval").addEventListener("input", () => {
 });
 $("tval").addEventListener("blur", render);
 $("maxhr").addEventListener("input", () => { state.maxhr = $("maxhr").value.replace(/\D/g, ""); render(); });
-$("piece").addEventListener("input", () => { state.piece = $("piece").value; render(); });
-$("piece").addEventListener("blur", render);
-for (const b of document.querySelectorAll("[data-piece]")) b.addEventListener("click", () => {
+// Typing works like a PM5: digits fill in from the right and the separators are drawn for you.
+$("piece").addEventListener("input", (e) => {
+  const k = state.pieceKind, cur = state.piece[k];
+  let d = String($("piece").value).replace(/\D/g, "").replace(/^0+/, "");
+  if (e.inputType && e.inputType.startsWith("delete") && d === cur) d = cur.slice(0, -1); // only a ":" or "," went
+  if (d.length > PIECE_MAX_DIGITS[k]) d = cur; // full: ignore further digits, as the monitor does
+  state.piece[k] = cleanPieceDigits(k, d);
+  render();
+  caretToEnd();
+});
+// Digits always go in at the right, so keep the caret there. Deferred, because the browser can move it after
+// an input event that rewrote the value.
+function caretToEnd() {
+  const el = $("piece"), put = () => { const n = el.value.length; el.setSelectionRange(n, n); };
+  put(); setTimeout(put, 0);
+}
+$("piece").addEventListener("focus", caretToEnd);
+$("pkTime").addEventListener("click", () => { state.pieceKind = "time"; render(); });
+$("pkDist").addEventListener("click", () => { state.pieceKind = "dist"; render(); });
+$("pquick").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-piece]"); if (!b) return;
+  const k = state.pieceKind;
   // Tapping the piece already shown clears it.
-  state.piece = state.piece.trim().toLowerCase() === b.dataset.piece ? "" : b.dataset.piece;
+  state.piece[k] = state.piece[k] === b.dataset.piece ? "" : b.dataset.piece;
   render();
 });
 

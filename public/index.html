@@ -62,18 +62,19 @@
       <button type="button" id="inc" aria-label="Increase">+</button>
     </div>
     <div class="piece">
-      <label for="piece" class="label">Piece</label>
-      <input id="piece" autocomplete="off" placeholder="e.g. 60:00" aria-describedby="pieceHint pieceOut">
-      <span id="pieceOut" role="status"></span>
-      <p class="phint" id="pieceHint">Type a time to see how far you'll row at this split, or a distance to see how long it takes.</p>
-      <div class="pquick" role="group" aria-label="Common pieces">
-        <button type="button" data-piece="30:00">30 min</button>
-        <button type="button" data-piece="60:00">60 min</button>
-        <button type="button" data-piece="2k">2k</button>
-        <button type="button" data-piece="5k">5k</button>
-        <button type="button" data-piece="6k">6k</button>
-        <button type="button" data-piece="10k">10k</button>
+      <div class="phead">
+        <span class="label" id="pieceLbl">Piece</span>
+        <div class="seg sm" role="group" aria-label="Piece by">
+          <button type="button" id="pkTime" aria-pressed="true">Time</button>
+          <button type="button" id="pkDist" aria-pressed="false">Distance</button>
+        </div>
       </div>
+      <div class="pentry">
+        <input id="piece" inputmode="numeric" pattern="[0-9]*" autocomplete="off" aria-labelledby="pieceLbl" aria-describedby="pieceOut">
+        <span class="punit" id="pieceUnit"></span>
+      </div>
+      <div id="pieceOut" role="status"></div>
+      <div class="pquick" id="pquick" role="group" aria-label="Common pieces"></div>
     </div>
   </section>
 

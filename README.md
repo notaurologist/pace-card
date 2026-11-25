@@ -2,7 +2,7 @@
 
 Target erg splits from your test results. Enter a test (1k, 2k, 6k, 20 min, 30 min or custom), then set a target as a **percentage of that test's power** or as **your 2k split plus seconds**. The page shows the split to hold, the watts, and the training zone (UT2 to AN) with stroke rate, heart rate and sample sessions.
 
-Enter a **piece** (`60:00`, `60 min`, `5000` or `5k`), or tap one of the common pieces under the field, to see the distance or finish time at the target split.
+Under the target, pick **Time** or **Distance** and enter a **piece** to see how far you'll row in that time, or how long that distance takes, at the target split. Digits fill in from the right, like on the PM5: type 6, 0, 0, 0 for 60:00, or 5, 0, 0, 0 for 5,000 m. The buttons under the box fill in common pieces. The piece doesn't change the target.
 
 It's a static site with no build step and no backend. Tests are saved in each rower's own browser (`localStorage`) and never leave the device. Safari clears that storage for sites not visited in 7 days, so on iPhone, add Pace Card to the home screen (the web app manifest makes it open as a standalone app). A service worker keeps the page working without a signal.
 

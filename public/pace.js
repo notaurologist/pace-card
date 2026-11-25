@@ -176,3 +176,41 @@ export function parsePiece(str) {
 // What a piece comes to at a split: the distance covered in a timed piece, or the time for a distance.
 export const pieceAt = (split, piece) =>
   piece.kind === "time" ? { dist: (piece.time / split) * 500 } : { time: (piece.dist / 500) * split };
+
+// PM5-style piece entry: digits fill in from the right. Time digits read as h:mm:ss (6000 is 60:00, 10000 is
+// 1:00:00), distance digits as metres. Leading zeros are dropped, and entry stops at the most digits a piece needs.
+export const PIECE_MAX_DIGITS = { time: 5, dist: 6 };
+export const cleanPieceDigits = (kind, str) =>
+  String(str ?? "").replace(/\D/g, "").replace(/^0+/, "").slice(0, PIECE_MAX_DIGITS[kind]);
+
+function timeParts(digits) {
+  const d = digits.padStart(3, "0");
+  const ss = d.slice(-2), rest = d.slice(0, -2);
+  return rest.length <= 2 ? { h: 0, m: rest, ss } : { h: Number(rest.slice(0, -2)), m: rest.slice(-2), ss };
+}
+
+// How the digits show in the box: "0:06", "60:00", "1:00:00", or "5,000".
+export function pieceDigitsText(kind, digits) {
+  if (!digits) return "";
+  if (kind === "dist") return Number(digits).toLocaleString("en-US");
+  const { h, m, ss } = timeParts(digits);
+  return h ? `${h}:${m}:${ss}` : `${Number(m)}:${ss}`;
+}
+
+// The piece the digits describe: null when blank, { kind, time } or { kind, dist }, or { error }.
+export function pieceFromDigits(kind, digits) {
+  if (!digits) return null;
+  if (kind === "dist") return { kind: "dist", dist: Number(digits) };
+  const { h, m, ss } = timeParts(digits);
+  if (Number(ss) > 59) return { error: "Seconds go up to 59." };
+  if (h && Number(m) > 59) return { error: "Minutes go up to 59 after the hour." };
+  return { kind: "time", time: h * 3600 + Number(m) * 60 + Number(ss) };
+}
+
+// The digits that enter a piece, the reverse of pieceFromDigits. Used to carry over a piece typed as text.
+export function pieceToDigits(piece) {
+  if (piece.kind === "dist") return cleanPieceDigits("dist", String(Math.round(piece.dist)));
+  const t = Math.round(piece.time), h = Math.floor(t / 3600), m = Math.floor((t % 3600) / 60), s = t % 60;
+  const two = (n) => String(n).padStart(2, "0");
+  return cleanPieceDigits("time", h ? `${h}${two(m)}${two(s)}` : `${m}${two(s)}`);
+}

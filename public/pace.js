@@ -59,7 +59,8 @@ export const ZONES = [
     goal: "Peak power. All-out. Use sparingly.", sessions: "8 × 200m with full recovery, or 6 × 30 s max with 4 min rest" },
 ];
 
-export const zoneMid = (z) => (z.off[0] === null ? z.off[1] - 3 : (z.off[0] + z.off[1]) / 2);
+// Middle of a zone. An open-ended zone (AN) has no fast limit, so pass where it is cut off, e.g. the end of the strip.
+export const zoneMid = (z, openFast = z.off[1] - 6) => ((z.off[0] === null ? openFast : z.off[0]) + z.off[1]) / 2;
 
 // Where an offset from the 2k split falls: { zone } | { between: [slower, faster] } | { easier: true }.
 export function zoneAt(off) {
@@ -99,7 +100,9 @@ export function targetSplit({ mode, pct, sec }, base, ref) {
   return ref.split + sec;
 }
 
-export const PCT_RANGE = [30, 130];
+// The top end has to reach the fast end of the zone strip (2k − 10 s) even from a long test rowed slower
+// than the 2k predicts: a 30-minute test at 2k + 30 s needs about 290% of its power to get there.
+export const PCT_RANGE = [30, 300];
 export const SEC_RANGE = [-15, 45];
 const clamp = (n, [lo, hi]) => Math.min(hi, Math.max(lo, n));
 

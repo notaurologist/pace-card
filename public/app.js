@@ -251,7 +251,7 @@ strip.addEventListener("pointerup", (e) => {
   strip.classList.remove("dragging");
   if (!drag.moved) {
     const off = offAt(xFromEvent(e)), hit = zoneAt(off);
-    setFromSplit(ref().split + (hit.zone ? zoneMid(hit.zone) : off)); render();
+    setFromSplit(ref().split + (hit.zone ? zoneMid(hit.zone, AX_FAST) : off)); render();
     $("zDetails").open = true;
   }
   drag = null;

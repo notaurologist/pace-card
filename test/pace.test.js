@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   watts, splitFromWatts, splitOf, paul2kSplit, parseTime, parseDist, fmt, zoneAt, latest2k, ref2k,
-  targetSplit, valueForSplit, parseShareParams, buildShareQuery, presetFor,
+  targetSplit, valueForSplit, parseShareParams, buildShareQuery, presetFor, PCT_RANGE,
 } from "../public/pace.js";
 
 const near = (a, b, tol = 0.05) => assert.ok(Math.abs(a - b) <= tol, `${a} not within ${tol} of ${b}`);
@@ -91,7 +91,18 @@ test("valueForSplit inverts targetSplit and clamps", () => {
   assert.equal(valueForSplit("pct", s, twenty, ref), 65);
   assert.equal(valueForSplit("sec", ref.split + 18.4, twenty, ref), 18);
   assert.equal(valueForSplit("sec", ref.split + 90, twenty, ref), 45);
-  assert.equal(valueForSplit("pct", 60, twenty, ref), 130);
+  assert.equal(valueForSplit("pct", 60, twenty, ref), PCT_RANGE[1]);
+});
+
+test("percent mode can reach every zone from a long, slow test", () => {
+  // A 7:00 2k and a 30-minute test rowed at 2k + 30 s. The old 130% cap stopped at the slow edge of AT.
+  const twoK = { id: "a", kind: "dist", dist: 2000, time: 420, createdAt: 1 };
+  const slow30 = { id: "b", kind: "time", time: 1800, dist: 1800 / 135 * 500, createdAt: 2 };
+  const ref = ref2k([twoK, slow30], slow30);
+  for (const off of [7.5, 0, -8, -10]) {
+    const pct = valueForSplit("pct", ref.split + off, slow30, ref);
+    near(targetSplit({ mode: "pct", pct }, slow30, ref) - ref.split, off, 0.6);
+  }
 });
 
 test("share links round-trip and reject bad values", () => {

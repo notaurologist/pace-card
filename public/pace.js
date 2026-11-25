@@ -154,3 +154,25 @@ export function buildShareQuery({ mode, pct, sec }, testKey) {
   if (mode === "pct" && testKey && testKey !== "custom") q.set("test", testKey);
   return "?" + q.toString();
 }
+
+// A piece to row at the target split. "60:00", "1:00:00" or "60 min" is a time; "5000", "5,000 m" or "5k" is a
+// distance. Returns null when blank, { kind: "time", time } or { kind: "dist", dist }, or { error } when unclear.
+export function parsePiece(str) {
+  const s = String(str ?? "").trim().toLowerCase();
+  if (!s) return null;
+  const bad = { error: "Enter a time like 60:00 or 60 min, or a distance like 5000 or 5k." };
+  if (s.includes(":")) { const time = parseTime(s); return Number.isFinite(time) ? { kind: "time", time } : bad; }
+  let m = s.match(/^(\d+(?:\.\d+)?)\s*(?:min|mins|minutes)$/);
+  if (m) { const time = Number(m[1]) * 60; return time > 0 ? { kind: "time", time } : bad; }
+  m = s.match(/^(\d+(?:\.\d+)?)\s*k$/);
+  if (m) { const dist = Number(m[1]) * 1000; return dist > 0 ? { kind: "dist", dist } : bad; }
+  const dist = parseDist(s.replace(/\s*m$/, ""));
+  if (!Number.isFinite(dist)) return bad;
+  // A bare small number is almost always minutes typed without a unit, and 60 m is never a piece.
+  if (dist < 100) return { error: `For ${s} minutes, enter ${s}:00 or ${s} min.` };
+  return { kind: "dist", dist };
+}
+
+// What a piece comes to at a split: the distance covered in a timed piece, or the time for a distance.
+export const pieceAt = (split, piece) =>
+  piece.kind === "time" ? { dist: (piece.time / split) * 500 } : { time: (piece.dist / 500) * split };

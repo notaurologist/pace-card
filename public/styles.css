@@ -2,11 +2,12 @@
 :root {
   --bg: #f1f4f6; --surface: #ffffff; --fg: #15212a; --muted: #5d6c78; --line: #d5dde3;
   --accent: #0b5d8c; --accent-soft: #dcebf4; --on-accent: #ffffff; --danger: #b3261e;
-  --z-ut2-bg: #b5d4f4; --z-ut2-fg: #0c447c;
-  --z-ut1-bg: #9fe1cb; --z-ut1-fg: #085041;
-  --z-at-bg: #fac775;  --z-at-fg: #633806;
-  --z-tr-bg: #f5c4b3;  --z-tr-fg: #712b13;
-  --z-an-bg: #f7c1c1;  --z-an-fg: #791f1f;
+  /* Zone colours: distinct hues, getting darker from AT to AN; each label is a dark shade of its own zone. */
+  --z-ut2-bg: #a9cdf2; --z-ut2-fg: #082e57;
+  --z-ut1-bg: #8fdaba; --z-ut1-fg: #053b28;
+  --z-at-bg: #f4d35e;  --z-at-fg: #503600;
+  --z-tr-bg: #f5a35c;  --z-tr-fg: #4d1b03;
+  --z-an-bg: #f08597;  --z-an-fg: #520a1b;
   --gap-bg: #e4e9ed;
   --display: "Barlow Semi Condensed", "Arial Narrow", system-ui, sans-serif;
   --body: "Inter", system-ui, -apple-system, sans-serif;
@@ -15,22 +16,22 @@
   :root:not([data-theme="light"]) {
     --bg: #0e151a; --surface: #172129; --fg: #e4ecf1; --muted: #93a4b1; --line: #2b3a45;
     --accent: #6bb8e3; --accent-soft: #1b3445; --on-accent: #0b1a23; --danger: #f2827a;
-    --z-ut2-bg: #0c447c; --z-ut2-fg: #cfe3f8;
-    --z-ut1-bg: #085041; --z-ut1-fg: #bdeedb;
-    --z-at-bg: #744a08;  --z-at-fg: #fde2b3;
-    --z-tr-bg: #712b13;  --z-tr-fg: #f9d6c8;
-    --z-an-bg: #791f1f;  --z-an-fg: #f9d4d4;
+    --z-ut2-bg: #7fadde; --z-ut2-fg: #082e57;
+    --z-ut1-bg: #67c4a0; --z-ut1-fg: #053b28;
+    --z-at-bg: #e2bf4c;  --z-at-fg: #503600;
+    --z-tr-bg: #e68a45;  --z-tr-fg: #4d1b03;
+    --z-an-bg: #e2707f;  --z-an-fg: #520a1b;
     --gap-bg: #22303a; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #0e151a; --surface: #172129; --fg: #e4ecf1; --muted: #93a4b1; --line: #2b3a45;
   --accent: #6bb8e3; --accent-soft: #1b3445; --on-accent: #0b1a23; --danger: #f2827a;
-  --z-ut2-bg: #0c447c; --z-ut2-fg: #cfe3f8;
-  --z-ut1-bg: #085041; --z-ut1-fg: #bdeedb;
-  --z-at-bg: #744a08;  --z-at-fg: #fde2b3;
-  --z-tr-bg: #712b13;  --z-tr-fg: #f9d6c8;
-  --z-an-bg: #791f1f;  --z-an-fg: #f9d4d4;
+  --z-ut2-bg: #7fadde; --z-ut2-fg: #082e57;
+  --z-ut1-bg: #67c4a0; --z-ut1-fg: #053b28;
+  --z-at-bg: #e2bf4c;  --z-at-fg: #503600;
+  --z-tr-bg: #e68a45;  --z-tr-fg: #4d1b03;
+  --z-an-bg: #e2707f;  --z-an-fg: #520a1b;
   --gap-bg: #22303a; color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -88,7 +89,9 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 
 .strip-wrap { display: grid; gap: 4px; }
 .strip { position: relative; height: 46px; border-radius: 8px; background: var(--gap-bg); touch-action: none; cursor: pointer; user-select: none; -webkit-user-select: none; }
-.zlabel { position: absolute; top: 50%; transform: translate(-50%, -50%); font: 700 0.85rem var(--display); letter-spacing: 0.04em; pointer-events: none; }
+.band { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; justify-content: center; font: 700 0.85rem var(--display); letter-spacing: 0.04em; pointer-events: none; }
+.band.first { border-radius: 8px 0 0 8px; }
+.band.last { border-radius: 0 8px 8px 0; }
 .marker { position: absolute; top: -8px; bottom: -8px; width: 4px; margin-left: -2px; background: var(--fg); border-radius: 2px; pointer-events: none; transition: left 0.12s ease-out; }
 .marker::before { content: ""; position: absolute; top: -2px; left: -5px; width: 14px; height: 14px; border-radius: 50%; background: var(--fg); border: 2px solid var(--bg); }
 .strip.dragging .marker { transition: none; }

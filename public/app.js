@@ -91,11 +91,13 @@ function render() {
   $("tunit").textContent = state.mode === "pct" ? "%" : "s";
 
   // Zone strip: slow on the left, fast on the right, in seconds from the 2k split.
-  // Each zone is solid across the guide's own range; colours blend across the gaps between zones.
-  $("strip").style.background = stripGradient();
-  $("strip").innerHTML = ZONES.map((z) =>
-    `<span class="zlabel" style="left:${xOf(zoneMid(z)) * 100}%;color:${zvar(z, "fg")}">${z.id}</span>`
-  ).join("") + `<div class="marker" style="left:${xOf(off) * 100}%"></div>`;
+  // Zones meet halfway across the guide's gaps, with hard edges.
+  $("strip").innerHTML = ZONES.map((z) => {
+    const slowX = xOf(z.edge[1]), fastX = z.edge[0] === null ? 1 : xOf(z.edge[0]);
+    const left = Math.min(slowX, fastX), width = Math.abs(fastX - slowX);
+    const cls = ["band", left <= 0.001 ? "first" : "", left + width >= 0.999 ? "last" : ""].join(" ");
+    return `<div class="${cls}" style="left:${left * 100}%;width:${width * 100}%;background:${zvar(z, "bg")};color:${zvar(z, "fg")}">${z.id}</div>`;
+  }).join("") + `<div class="marker" style="left:${xOf(off) * 100}%"></div>`;
   $("strip").setAttribute("aria-valuenow", String(Math.round(off)));
   $("strip").setAttribute("aria-valuetext", `${fmt(s)} per 500 metres, 2k ${signed(Math.round(off))} seconds`);
   $("axis").innerHTML = `<span>Slower · ${fmtShort(r.split + AX_SLOW)}</span><span>${r.est ? "Est. 2k" : "2k"} ${fmt(r.split)}</span><span>${fmtShort(r.split + AX_FAST)} · Faster</span>`;
@@ -130,16 +132,6 @@ function render() {
 const AX_SLOW = 36, AX_FAST = -10;
 const xOf = (off) => Math.min(1, Math.max(0, (AX_SLOW - off) / (AX_SLOW - AX_FAST)));
 const offAt = (x) => AX_SLOW - x * (AX_SLOW - AX_FAST);
-const pc = (off) => `${(xOf(off) * 100).toFixed(2)}%`;
-function stripGradient() {
-  // Gray (easier than UT2) up to UT2's slow end, then a hard start to UT2.
-  const stops = ["var(--gap-bg) 0%", `var(--gap-bg) ${pc(ZONES[0].off[1])}`];
-  for (const z of ZONES) {
-    const c = zvar(z, "bg");
-    stops.push(`${c} ${pc(z.off[1])}`, `${c} ${z.off[0] === null ? "100%" : pc(z.off[0])}`);
-  }
-  return `linear-gradient(90deg, ${stops.join(", ")})`;
-}
 
 function setFromSplit(split) {
   const t = selTest(); if (!t || !Number.isFinite(split)) return;

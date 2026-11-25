@@ -61,21 +61,9 @@
       <span class="unit-l" id="tunit">%</span>
       <button type="button" id="inc" aria-label="Increase">+</button>
     </div>
-    <div class="piece">
-      <div class="phead">
-        <span class="label" id="pieceLbl">Piece</span>
-        <div class="seg sm" role="group" aria-label="Piece by">
-          <button type="button" id="pkTime" aria-pressed="true">Time</button>
-          <button type="button" id="pkDist" aria-pressed="false">Distance</button>
-        </div>
-      </div>
-      <div class="pentry">
-        <input id="piece" inputmode="numeric" pattern="[0-9]*" autocomplete="off" aria-labelledby="pieceLbl" aria-describedby="pieceOut">
-        <span class="punit" id="pieceUnit"></span>
-      </div>
-      <div id="pieceOut" role="status"></div>
-      <div class="pquick" id="pquick" role="group" aria-label="Common pieces"></div>
-    </div>
+    <button type="button" class="pbtn" id="pieceOpen" aria-haspopup="dialog">
+      <span class="label">Piece</span> <span id="pieceSum"></span>
+    </button>
   </section>
 
   <section class="strip-wrap" aria-label="Training zones">
@@ -107,6 +95,28 @@
 
   <p class="fine">Percentages are of your test's power (watts), not its time or speed. Watts use the Concept2 formula, 2.80 ÷ (split/500)³. Zones are your 2k split plus seconds, from <a href="https://ergmaniac.com/blog/indoor-rowing-training-zones-explained" target="_blank" rel="noopener">ErgManiac's zone guide</a>. Without a saved 2k, the 2k is estimated with Paul's Law (+5 s/500m each time distance doubles). Your tests are saved on this device only. On iPhone, add Pace Card to your home screen so Safari doesn't clear them after a week away. Pace Card is not affiliated with Concept2 or ErgManiac.</p>
 </main>
+  <dialog id="pieceDlg" aria-labelledby="pieceLbl">
+    <form method="dialog" class="piece">
+      <div class="phead">
+        <span class="label" id="pieceLbl">Piece</span>
+        <span class="pat" id="pieceAt"></span>
+      </div>
+      <div class="seg sm" role="group" aria-label="Piece by">
+        <button type="button" id="pkTime" aria-pressed="true">Time</button>
+        <button type="button" id="pkDist" aria-pressed="false">Distance</button>
+      </div>
+      <div class="pentry">
+        <input id="piece" inputmode="numeric" autocomplete="off" enterkeyhint="done" aria-labelledby="pieceLbl" aria-describedby="pieceOut">
+        <span class="punit" id="pieceUnit"></span>
+      </div>
+      <div id="pieceOut" role="status"></div>
+      <div class="pquick" id="pquick" role="group" aria-label="Common pieces"></div>
+      <div class="pactions">
+        <button type="button" class="btn" id="pieceClear">Clear</button>
+        <button type="submit" class="btn primary">Done</button>
+      </div>
+    </form>
+  </dialog>
 <script type="module" src="app.js"></script>
 </body>
 </html>

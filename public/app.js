@@ -163,6 +163,14 @@ function render() {
       ? `<b>${fmtDist(res.dist)} m</b> at this split`
       : `<b>${fmt(res.time)}</b> at this split`;
   }
+  $("pieceAt").textContent = `at ${fmt(s)}/500m`;
+  // On the card, only a one-line summary: the full entry opens in a dialog.
+  if (pc && !pc.error) {
+    const res = pieceAt(s, pc);
+    $("pieceSum").innerHTML = pc.kind === "time"
+      ? `${pieceDigitsText("time", digits)} → <b>${fmtDist(res.dist)} m</b>`
+      : `${pieceDigitsText("dist", digits)} m → <b>${fmt(res.time)}</b>`;
+  } else $("pieceSum").innerHTML = `<span class="phint">How far or how long at this split?</span>`;
 
   $("shareUrl").hidden = true; $("shareMsg").textContent = "";
   save();
@@ -303,6 +311,19 @@ function caretToEnd() {
   put(); setTimeout(put, 0);
 }
 $("piece").addEventListener("focus", caretToEnd);
+$("pieceOpen").addEventListener("click", () => {
+  render();
+  $("pieceDlg").showModal();
+  $("piece").focus(); // brings up the number pad straight away
+});
+// Tapping the dimmed backdrop closes the dialog, as Done does.
+$("pieceDlg").addEventListener("click", (e) => {
+  const r = $("pieceDlg").getBoundingClientRect();
+  const out = e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+  if (e.target === $("pieceDlg") && out) $("pieceDlg").close();
+});
+$("pieceDlg").addEventListener("close", render);
+$("pieceClear").addEventListener("click", () => { state.piece[state.pieceKind] = ""; render(); $("piece").focus(); });
 $("pkTime").addEventListener("click", () => { state.pieceKind = "time"; render(); });
 $("pkDist").addEventListener("click", () => { state.pieceKind = "dist"; render(); });
 $("pquick").addEventListener("click", (e) => {

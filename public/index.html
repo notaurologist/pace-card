@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pace Card</title>
+<meta name="description" content="Target erg splits from your test results, by percentage of power or 2k + seconds.">
+<meta name="theme-color" content="#f1f4f6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e151a" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main>
+  <header>
+    <h1>Pace Card</h1>
+  </header>
+
+  <div class="notice" id="linkNotice" role="status" hidden></div>
+
+  <section aria-label="Your tests">
+    <div class="label">Based on</div>
+    <div class="chips" id="chips"></div>
+    <div class="basis" id="basis"></div>
+    <div class="banner" id="exBanner" hidden>This is an example test. Tap <b>Edit</b> to enter your own result.</div>
+    <form class="editor" id="editor" hidden novalidate>
+      <div class="label" id="edTitle">Add a test</div>
+      <div class="presets" id="presets" role="group" aria-label="Test type"></div>
+      <div class="fields">
+        <label><span class="label">Distance (m)</span><input id="edDist" inputmode="numeric" autocomplete="off"></label>
+        <label><span class="label">Time</span><input id="edTime" inputmode="decimal" autocomplete="off" placeholder="7:00.0"></label>
+        <label class="wide"><span class="label">Date rowed</span><input id="edDate" type="date"></label>
+      </div>
+      <div class="err" id="edErr" role="alert"></div>
+      <div class="actions">
+        <button type="submit" class="btn primary">Save test</button>
+        <button type="button" class="btn" id="edCancel">Cancel</button>
+        <button type="button" class="btn danger" id="edDelete">Delete</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="answer" aria-live="polite">
+    <div class="split" id="outSplit">–<small>/500m</small></div>
+    <div class="facts" id="facts"></div>
+  </section>
+
+  <section class="target" aria-label="Target">
+    <div class="seg" role="group" aria-label="Target as">
+      <button type="button" id="mPct" aria-pressed="true">% of power</button>
+      <button type="button" id="mSec" aria-pressed="false">2k + seconds</button>
+    </div>
+    <div class="stepper">
+      <button type="button" id="dec" aria-label="Decrease">−</button>
+      <input id="tval" inputmode="decimal" autocomplete="off" aria-label="Target value">
+      <span class="unit-l" id="tunit">%</span>
+      <button type="button" id="inc" aria-label="Increase">+</button>
+    </div>
+  </section>
+
+  <section class="strip-wrap" aria-label="Training zones">
+    <div class="strip" id="strip" role="slider" tabindex="0" aria-label="Target split on the zone strip" aria-valuemin="-15" aria-valuemax="45"></div>
+    <div class="axis" id="axis"></div>
+    <div class="hint">Drag along the strip, or tap a zone to jump to its middle.</div>
+  </section>
+
+  <details id="zDetails" open>
+    <summary><span id="zTitle">Zone</span></summary>
+    <div class="dbody">
+      <dl class="kv" id="zKv"></dl>
+      <div class="hrrow"><label for="maxhr" class="label">Max HR</label><input id="maxhr" inputmode="numeric" placeholder="190" autocomplete="off"><span class="fine">Optional, for bpm ranges</span></div>
+    </div>
+  </details>
+
+  <details id="pctDetails">
+    <summary>Percentage table</summary>
+    <div class="dbody">
+      <table><thead><tr><th>%</th><th>Split</th><th>Watts</th><th>vs 2k</th></tr></thead><tbody id="tbody"></tbody></table>
+    </div>
+  </details>
+
+  <section class="share" aria-label="Share">
+    <button type="button" class="btn" id="shareBtn">Copy link to this target</button>
+    <input id="shareUrl" readonly aria-label="Link to this target" hidden>
+    <div class="fine" id="shareMsg" role="status"></div>
+  </section>
+
+  <p class="fine">Percentages are of your test's power (watts), not its time or speed. Watts use the Concept2 formula, 2.80 ÷ (split/500)³. Zones are your 2k split plus seconds, from <a href="https://ergmaniac.com/blog/indoor-rowing-training-zones-explained" target="_blank" rel="noopener">ErgManiac's zone guide</a>. Without a saved 2k, the 2k is estimated with Paul's Law (+5 s/500m each time distance doubles). Your tests are saved on this device only. Pace Card is not affiliated with Concept2 or ErgManiac.</p>
+</main>
+<script type="module" src="app.js"></script>
+</body>
+</html>

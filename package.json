@@ -1,0 +1,13 @@
+{
+  "name": "pace-card",
+  "private": true,
+  "type": "module",
+  "description": "Target erg splits from your test results, by percentage of power or 2k + seconds.",
+  "scripts": {
+    "test": "node --test",
+    "dev": "npx --yes serve@14.2.4 public -l 5173"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

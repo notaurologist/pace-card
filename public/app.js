@@ -136,6 +136,8 @@ function render() {
   // Piece at the target split
   if (document.activeElement !== $("piece")) $("piece").value = state.piece;
   const pc = parsePiece(state.piece);
+  $("pieceHint").hidden = !!pc && !pc.error;
+  for (const b of document.querySelectorAll("[data-piece]")) b.setAttribute("aria-pressed", String(b.dataset.piece === state.piece.trim().toLowerCase()));
   if (!pc) $("pieceOut").textContent = "";
   // Hold the error until the field loses focus, so typing 5000 doesn't flash an error at "5".
   else if (pc.error) $("pieceOut").innerHTML = document.activeElement === $("piece") ? "" : `<span class="perr">${pc.error}</span>`;
@@ -270,6 +272,11 @@ $("tval").addEventListener("blur", render);
 $("maxhr").addEventListener("input", () => { state.maxhr = $("maxhr").value.replace(/\D/g, ""); render(); });
 $("piece").addEventListener("input", () => { state.piece = $("piece").value; render(); });
 $("piece").addEventListener("blur", render);
+for (const b of document.querySelectorAll("[data-piece]")) b.addEventListener("click", () => {
+  // Tapping the piece already shown clears it.
+  state.piece = state.piece.trim().toLowerCase() === b.dataset.piece ? "" : b.dataset.piece;
+  render();
+});
 
 // ---- zone strip: drag, or tap a zone ----
 const strip = $("strip");

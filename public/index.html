@@ -63,8 +63,17 @@
     </div>
     <div class="piece">
       <label for="piece" class="label">Piece</label>
-      <input id="piece" autocomplete="off" placeholder="60:00 or 5k" aria-describedby="pieceOut">
+      <input id="piece" autocomplete="off" placeholder="e.g. 60:00" aria-describedby="pieceHint pieceOut">
       <span id="pieceOut" role="status"></span>
+      <p class="phint" id="pieceHint">Type a time to see how far you'll row at this split, or a distance to see how long it takes.</p>
+      <div class="pquick" role="group" aria-label="Common pieces">
+        <button type="button" data-piece="30:00">30 min</button>
+        <button type="button" data-piece="60:00">60 min</button>
+        <button type="button" data-piece="2k">2k</button>
+        <button type="button" data-piece="5k">5k</button>
+        <button type="button" data-piece="6k">6k</button>
+        <button type="button" data-piece="10k">10k</button>
+      </div>
     </div>
   </section>
 

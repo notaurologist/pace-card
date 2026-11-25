@@ -88,9 +88,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 
 .strip-wrap { display: grid; gap: 4px; }
 .strip { position: relative; height: 46px; border-radius: 8px; background: var(--gap-bg); touch-action: none; cursor: pointer; user-select: none; -webkit-user-select: none; }
-.band { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; justify-content: center; font: 700 0.85rem var(--display); letter-spacing: 0.04em; }
-.band.first { border-radius: 8px 0 0 8px; }
-.band.last { border-radius: 0 8px 8px 0; }
+.zlabel { position: absolute; top: 50%; transform: translate(-50%, -50%); font: 700 0.85rem var(--display); letter-spacing: 0.04em; pointer-events: none; }
 .marker { position: absolute; top: -8px; bottom: -8px; width: 4px; margin-left: -2px; background: var(--fg); border-radius: 2px; pointer-events: none; transition: left 0.12s ease-out; }
 .marker::before { content: ""; position: absolute; top: -2px; left: -5px; width: 14px; height: 14px; border-radius: 50%; background: var(--fg); border: 2px solid var(--bg); }
 .strip.dragging .marker { transition: none; }

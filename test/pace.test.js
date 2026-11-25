@@ -69,6 +69,20 @@ test("zoneAt names a zone for every offset up to UT2's slow end", () => {
   assert.equal(zoneAt(30.2).easier, true);
 });
 
+test("zoneAt names the nearby zone when a split sits in a gap", () => {
+  const near = (off) => { const r = zoneAt(off); return r.near ? `${r.zone.id}>${r.near.id}` : r.zone.id; };
+  assert.equal(near(15), "UT1"); // inside the guide's range: no neighbour
+  assert.equal(near(12), "UT1");
+  assert.equal(near(18), "UT1");
+  assert.equal(near(18.5), "UT1>UT2");
+  assert.equal(near(19.5), "UT2>UT1");
+  assert.equal(near(11.5), "UT1>AT");
+  assert.equal(near(-3), "TR>AN");
+  assert.equal(near(-4), "AN>TR");
+  assert.equal(near(-12), "AN");
+  assert.equal(near(30), "UT2");
+});
+
 test("latest2k picks the most recent 2k by date, then by entry time", () => {
   const old = { kind: "dist", dist: 2000, time: 410, date: "2026-03-01", createdAt: 300 };
   const recent = { kind: "dist", dist: 2000, time: 425, date: "2026-11-20", createdAt: 100 };

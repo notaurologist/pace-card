@@ -72,16 +72,18 @@ ZONES.forEach((z, i) => {
 
 export const zoneMid = (z) => (z.off[0] === null ? z.off[1] - 3 : (z.off[0] + z.off[1]) / 2);
 
-// Where an offset from the 2k split falls: { zone } | { easier: true } (slower than UT2).
+// Where an offset from the 2k split falls: { zone, near? } | { easier: true } (slower than UT2).
 // Slower zones are checked first, so a shared edge belongs to the slower zone.
+// `near` is the neighbouring zone when the offset is outside the guide's own range (in a gap).
 export function zoneAt(off) {
   const EPS = 0.05;
   if (off > ZONES[0].edge[1] + EPS) return { easier: true };
-  for (const z of ZONES) {
-    const fast = z.edge[0] === null ? -Infinity : z.edge[0];
-    if (off >= fast - EPS) return { zone: z };
-  }
-  return { zone: ZONES[ZONES.length - 1] };
+  const i = ZONES.findIndex((z) => off >= (z.edge[0] === null ? -Infinity : z.edge[0]) - EPS);
+  const z = ZONES[i === -1 ? ZONES.length - 1 : i];
+  const idx = ZONES.indexOf(z);
+  if (off > z.off[1] + EPS && idx > 0) return { zone: z, near: ZONES[idx - 1] };
+  if (z.off[0] !== null && off < z.off[0] - EPS && idx < ZONES.length - 1) return { zone: z, near: ZONES[idx + 1] };
+  return { zone: z };
 }
 
 const recency = (t) => (t.date ? Date.parse(t.date + "T12:00:00Z") : t.createdAt ?? 0);

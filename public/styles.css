@@ -92,8 +92,14 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 .band { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; justify-content: center; font: 700 0.85rem var(--display); letter-spacing: 0.04em; pointer-events: none; }
 .band.first { border-radius: 8px 0 0 8px; }
 .band.last { border-radius: 0 8px 8px 0; }
-.marker { position: absolute; top: -8px; bottom: -8px; width: 4px; margin-left: -2px; background: var(--fg); border-radius: 2px; pointer-events: none; transition: left 0.12s ease-out; }
-.marker::before { content: ""; position: absolute; top: -2px; left: -5px; width: 14px; height: 14px; border-radius: 50%; background: var(--fg); border: 2px solid var(--bg); }
+/* Marker: an arrow at the top and bottom edge of the strip, pointing in. Each sits mostly on the band with its
+   outer edge just outside, and a thin outline in the page colour keeps it visible on every zone colour. */
+.strip { margin-block: 4px; }
+.marker { position: absolute; top: -4px; bottom: -4px; width: 0; pointer-events: none; transition: left 0.12s ease-out;
+  filter: drop-shadow(0 0 1px var(--bg)) drop-shadow(0 0 1px var(--bg)); }
+.marker::before, .marker::after { content: ""; position: absolute; left: -7px; width: 14px; height: 11px; background: var(--fg); }
+.marker::before { top: 0; clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.marker::after { bottom: 0; clip-path: polygon(50% 0, 100% 100%, 0 100%); }
 .strip.dragging .marker { transition: none; }
 .axis { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 .hint { font-size: 0.8rem; color: var(--muted); text-align: center; }

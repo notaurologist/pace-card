@@ -144,8 +144,23 @@ body { margin: 0; padding-top: calc(20px + env(safe-area-inset-top, 0px)); paddi
 .share { display: grid; gap: 6px; justify-items: start; }
 #shareUrl { width: 100%; font: 0.85rem var(--body); color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
 .basis .zsrc { display: block; margin-top: 2px; }
-.piece { display: flex; align-items: center; flex-wrap: wrap; justify-content: center; gap: 6px 8px; font-variant-numeric: tabular-nums; }
-.piece input { width: 7.5rem; font: 600 1.1rem var(--display); color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; }
-#pieceOut { font-size: 0.92rem; color: var(--muted); }
+.piece { display: grid; justify-items: center; gap: 12px; font-variant-numeric: tabular-nums; }
+.phead { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; width: 100%; }
+.pat { font-size: 0.85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.seg.sm button { padding: 4px 12px; font-size: 0.85rem; }
+.pentry { display: flex; align-items: baseline; gap: 6px; }
+.pentry input { width: 8.5rem; text-align: center; font: 600 1.5rem var(--display); color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; }
+.punit { font: 500 1.1rem var(--display); color: var(--muted); }
+#pieceOut { font-size: 0.92rem; color: var(--muted); text-align: center; min-height: 1.3em; }
 #pieceOut b { color: var(--fg); font-weight: 600; }
-#pieceOut .perr { color: var(--danger); font-size: 0.82rem; }
+#pieceOut .perr { color: var(--danger); }
+.pquick { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.pquick button { font: 500 0.85rem var(--body); color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px 11px; min-height: 32px; }
+.pquick button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.pactions { display: flex; justify-content: space-between; width: 100%; margin-top: 4px; }
+.pbtn { display: inline-flex; align-items: baseline; gap: 8px; margin-top: 4px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--fg); font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+.pbtn b { font-weight: 600; }
+.pbtn .phint { color: var(--muted); }
+/* Sits high on the screen so the number pad doesn't cover it. */
+#pieceDlg { width: min(22rem, calc(100vw - 32px)); margin: max(12px, 8vh) auto auto; padding: 18px 16px 14px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); color: var(--fg); }
+#pieceDlg::backdrop { background: rgb(0 0 0 / 0.4); }

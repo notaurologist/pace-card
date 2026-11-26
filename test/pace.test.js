@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   watts, splitFromWatts, splitOf, paul2kSplit, parseTime, parseDist, fmt, zoneAt, latest2k, ref2k,
   targetSplit, valueForSplit, parseShareParams, buildShareQuery, presetFor, PCT_RANGE, parsePiece, pieceAt,
+  cleanPieceDigits, pieceDigitsText, pieceFromDigits, pieceToDigits,
 } from "../public/pace.js";
 
 const near = (a, b, tol = 0.05) => assert.ok(Math.abs(a - b) <= tol, `${a} not within ${tol} of ${b}`);
@@ -140,4 +141,25 @@ test("parsePiece reads times and distances the way rowers write them", () => {
 test("pieceAt gives distance for a timed piece and time for a distance", () => {
   near(pieceAt(120, { kind: "time", time: 3600 }).dist, 15000, 1e-9); // 60 min at 2:00 is 15,000 m
   near(pieceAt(105, { kind: "dist", dist: 2000 }).time, 420, 1e-9); // 2k at 1:45 is 7:00
+});
+
+test("piece digits fill in from the right like a PM5", () => {
+  assert.equal(cleanPieceDigits("time", "0060:00"), "6000");
+  assert.equal(cleanPieceDigits("time", "1234567"), "12345");
+  assert.equal(cleanPieceDigits("dist", "5,000"), "5000");
+  assert.equal(pieceDigitsText("time", ""), "");
+  assert.equal(pieceDigitsText("time", "6"), "0:06");
+  assert.equal(pieceDigitsText("time", "600"), "6:00");
+  assert.equal(pieceDigitsText("time", "6000"), "60:00");
+  assert.equal(pieceDigitsText("time", "10000"), "1:00:00");
+  assert.equal(pieceDigitsText("dist", "10000"), "10,000");
+  assert.equal(pieceFromDigits("time", ""), null);
+  assert.deepEqual(pieceFromDigits("time", "6000"), { kind: "time", time: 3600 });
+  assert.deepEqual(pieceFromDigits("time", "9000"), { kind: "time", time: 5400 }); // 90:00 is fine without hours
+  assert.deepEqual(pieceFromDigits("time", "13000"), { kind: "time", time: 5400 });
+  assert.ok(pieceFromDigits("time", "190").error);
+  assert.ok(pieceFromDigits("time", "16000").error);
+  assert.deepEqual(pieceFromDigits("dist", "5000"), { kind: "dist", dist: 5000 });
+  for (const p of [{ kind: "time", time: 3600 }, { kind: "time", time: 5400 }, { kind: "time", time: 95 }, { kind: "dist", dist: 5000 }])
+    assert.deepEqual(pieceFromDigits(p.kind, pieceToDigits(p)), p);
 });
